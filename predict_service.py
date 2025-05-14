@@ -1,37 +1,34 @@
-#
-//  predict_service.py
-//  
-//
-//  Created by AU on 14/05/2025.
-//
-
 from fastapi import FastAPI
 from pydantic import BaseModel
-import pickle
-import uvicorn
+import joblib
+import pandas as pd
 
 app = FastAPI()
 
-# Load the trained Random Forest model
-model = pickle.load(open("body_type_rf_model.pkl", "rb"))
-
-# Load the label encoder
-label_encoder = pickle.load(open("body_type_label_encoder.pkl", "rb"))
+# Load the trained model and label encoder
+model = joblib.load("body_type_rf_model.pkl")
+encoder = joblib.load("body_type_label_encoder.pkl")
 
 class Measurement(BaseModel):
+    gender: float  # 1.0 = Male, 2.0 = Female
+    age: int
     shoulderWidth: float
-    hipWidth: float
     waist: float
-    height: float
+    hips: float
 
 @app.post("/predict")
 def predict(data: Measurement):
-    features = [[
-        data.shoulderWidth,
-        data.hipWidth,
-        data.waist,
-        data.height
-    ]]
-    prediction = model.predict(features)
-    body_type_label = label_encoder.inverse_transform(prediction)[0]
-    return {"bodyType": body_type_label}
+    try:
+        input_df = pd.DataFrame([{
+            "Gender": data.gender,
+            "Age": data.age,
+            "ShoulderWidth": data.shoulderWidth,
+            "Waist": data.waist,
+            "Hips": data.hips
+        }])
+        
+        prediction = model.predict(input_df)
+        label = encoder.inverse_transform(prediction)[0]
+        return {"bodyType": label}
+    except Exception as e:
+        return {"error": str(e)}
