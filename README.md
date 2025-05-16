@@ -28,7 +28,7 @@ This project implements a machine learning pipeline to classify human body types
 3. Send a POST request to `/predict` with body measurements:
     ```json
     {
-      "gender": "Female",
+      "gender": 2.0  // 1.0 = Male, 2.0 = Female",
       "age": 25,
       "shoulder": 40.5,
       "waist": 30.0,
@@ -40,4 +40,3 @@ This project implements a machine learning pipeline to classify human body types
 
 - Use `URLSession` to send user input from the UI to the API and display the predicted body type.
 - Refer to `ContentView.swift` in your iOS project for integration.
-
